@@ -8,19 +8,17 @@ import vtkPlaneSource     from 'vtk.js/Sources/Filters/Sources/PlaneSource';
 import vtkCalculator      from 'vtk.js/Sources/Filters/General/Calculator';
 
 import vtkActor               from 'vtk.js/Sources/Rendering/Core/Actor';
-import vtkDataArray           from 'vtk.js/Sources/Common/Core/DataArray';
 import vtkMapper              from 'vtk.js/Sources/Rendering/Core/Mapper';
 import vtkOpenGLRenderWindow  from 'vtk.js/Sources/Rendering/OpenGL/RenderWindow';
 import vtkRenderWindow        from 'vtk.js/Sources/Rendering/Core/RenderWindow';
 import vtkRenderer            from 'vtk.js/Sources/Rendering/Core/Renderer';
 
-import { VtkDataTypes }       from 'vtk.js/Sources/Common/Core/DataArray/Constants';
 import { AttributeTypes }     from 'vtk.js/Sources/Common/DataModel/DataSetAttributes/Constants';
 import { FieldDataTypes }     from 'vtk.js/Sources/Common/DataModel/DataSet/Constants';
+import { PointPrecision }     from 'vtk.js/Sources/Filters/General/Constants';
+import { VtkDataTypes }       from 'vtk.js/Sources/Common/Core/DataArray/Constants';
 
 import baseline from './testAppendPolyData.png';
-
-const PointPrecision = vtkAppendPolyData;
 
 test('Test vtkAppendPolyData instance', (t) => {
   t.ok(vtkAppendPolyData, 'Make sure the class definition exists.');
