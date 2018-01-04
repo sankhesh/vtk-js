@@ -6,7 +6,7 @@ import { VtkDataTypes } from 'vtk.js/Sources/Common/Core/DataArray/Constants';
 
 import Constants        from 'vtk.js/Sources/Filters/General/Constants';
 
-const { PointPrecision } = Constants;
+const { VtkPointPrecision } = Constants;
 const { vtkErrorMacro } = macro;
 
 function offsetCellArray(typedArray, offset) {
@@ -96,9 +96,9 @@ function vtkAppendPolyData(publicAPI, model) {
       }
     }
 
-    if (model.outputPointsPrecision === PointPrecision.SINGLE) {
+    if (model.outputPointsPrecision === VtkPointPrecision.SINGLE) {
       pointType = VtkDataTypes.FLOAT;
-    } else if (model.outputPointsPrecision === PointPrecision.DOUBLE) {
+    } else if (model.outputPointsPrecision === VtkPointPrecision.DOUBLE) {
       pointType = VtkDataTypes.DOUBLE;
     }
 
@@ -202,7 +202,7 @@ function vtkAppendPolyData(publicAPI, model) {
 // ----------------------------------------------------------------------------
 
 const DEFAULT_VALUES = {
-  outputPointsPrecision: PointPrecision.DEFAULT,
+  outputPointsPrecision: VtkPointPrecision.DEFAULT,
 };
 
 // ----------------------------------------------------------------------------
