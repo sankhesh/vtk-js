@@ -1,5 +1,6 @@
-import macro               from 'vtk.js/Sources/macro';
-import Constants from 'vtk.js/Sources/Common/Core/DataArray/Constants';
+import Constants    from 'vtk.js/Sources/Common/Core/DataArray/Constants';
+import macro        from 'vtk.js/Sources/macro';
+import vtkMath      from 'vtk.js/Sources/Common/Core/Math';
 
 const { DefaultDataType } = Constants;
 const { vtkErrorMacro } = macro;
@@ -45,6 +46,18 @@ function getDataType(typedArray) {
   return Object.prototype.toString.call(typedArray).split(' ')[1].slice(0, -1);
 }
 
+function getMaxNorm(normArray) {
+  var numComps = normArray.getNumberOfComponents();
+  var maxNorm = 0.0;
+  for (let i = 0; i < normArray.getNumberOfTuples(); ++i) {
+    const norm = vtkMath.norm(normArray.getTuple(i), numComps);
+    if (norm > maxNorm) {
+      maxNorm = norm;
+    }
+  }
+  return maxNorm;
+}
+
 // ----------------------------------------------------------------------------
 // Static API
 // ----------------------------------------------------------------------------
@@ -52,6 +65,7 @@ function getDataType(typedArray) {
 export const STATIC = {
   computeRange,
   getDataType,
+  getMaxNorm,
 };
 
 // ----------------------------------------------------------------------------
