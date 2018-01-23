@@ -138,9 +138,10 @@ function vtkDataSetAttributes(publicAPI, model) {
       arrayName => publicAPI.setActiveAttributeByIndex(
         publicAPI.getArrayWithIndex(arrayName).index, value);
     publicAPI[`copy${value}Off`] = () => {
+      publicAPI.initialize();
       const attType = value.toUpperCase();
       model.copyAttributeFlags[
-        AttributeCopyOperations.ALLCOPY][
+        AttributeCopyOperations.PASSDATA][
           AttributeTypes[attType]]
         = false;
     };
