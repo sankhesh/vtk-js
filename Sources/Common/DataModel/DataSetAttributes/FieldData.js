@@ -79,21 +79,73 @@ function vtkFieldData(publicAPI, model) {
   publicAPI.getCopyFieldFlags = () => model.copyFieldFlags;
   publicAPI.getFlag = (arrayName) => model.copyFieldFlags[arrayName];
   publicAPI.passData = (other, fromId = -1, toId = -1) => {
-    other.getArrays().forEach((arr, idx) => {
+    other.getArrays().every((arr) => {
       const copyFlag = publicAPI.getFlag(arr.getName());
       if (
         copyFlag !== false &&
         !(model.doCopyAllOff && copyFlag !== true) &&
         arr
       ) {
-        const destArr = publicAPI.getArrayByName(arr.getName());
-        if ((fromId < 1 && toId < 1) || !destArr) {
-          publicAPI.addArray(arr);
-        } else if (idx >= fromId && (toId > -1 || idx < toId)) {
-          destArr.setTuple(idx, arr.getTuple(idx));
+        let destArr = publicAPI.getArrayByName(arr.getName());
+        if (!destArr) {
+          if (fromId < 0 && toId < 0) {
+            publicAPI.addArray(arr);
+          } else if (fromId > -1 && fromId < arr.getNumberOfTuples()) {
+            destArr = other.newClone();
+            const tId = toId > -1 ? toId : fromId;
+            destArr.setTuple(tId, arr.getTuple(fromId));
+            publicAPI.addArray(destArr);
+          } else {
+            publicAPI.addArray(arr);
+          }
+        } else {
+          if (arr.getNumberOfComponents() !== destArr.getNumberOfComponents()) {
+            // vtkErrorMacro(`To pass data, arrays of same name must have the same number of components: ${arr.getName()}`);
+            return false;
+          }
+          if (fromId > -1 && fromId < arr.getNumberOfTuples()) {
+            const tId = toId > -1 ? toId : fromId;
+            destArr.setTuple(tId, arr.getTuple(fromId));
+          } else {
+            for (let i = 0; i < arr.getNumberOfTuples(); ++i) {
+              destArr.setTuple(i, arr.getTuple(i));
+            }
+          }
         }
+        //   if (!destArr && fromId < 0 && toId < 0) {
+        //     // Add the array if it does not exist in the destination
+        //     // irrespective of the (from, to) indices provided
+        //     publicAPI.addArray(arr);
+        //     return true;
+        //   } else if (idx >= fromId && (toId > -1 || idx < toId)) {
+        //     destArr.setTuple(idx, arr.getTuple(idx));
+        //     return true;
+        //   }
       }
+      return true;
     });
+    // other.getArrays().forEach((arr, idx) => {
+    //   const copyFlag = publicAPI.getFlag(arr.getName());
+    //   if (
+    //     copyFlag !== false &&
+    //     !(model.doCopyAllOff && copyFlag !== true) &&
+    //     arr
+    //   ) {
+    //     const destArr = publicAPI.getArrayByName(arr.getName());
+    //     console.log(`${destArr}`);
+    //     if (!destArr) {
+    //       // Add the array if it does not exist in the destination
+    //       // irrespective of the (from, to) indices provided
+    //       publicAPI.addArray(arr);
+    //     }
+    //     if ((fromId < 1 && toId < 1) || !destArr) {
+    //       console.log
+    //       publicAPI.addArray(arr);
+    //     } else if (idx >= fromId && (toId > -1 || idx < toId)) {
+    //       destArr.setTuple(idx, arr.getTuple(idx));
+    //     }
+    //   }
+    // });
   };
   publicAPI.copyFieldOn = (arrayName) => {
     model.copyFieldFlags[arrayName] = true;
