@@ -165,9 +165,22 @@ function vtkDataArray(publicAPI, model) {
 
   publicAPI.setTuple = (idx, tuple) => {
     const offset = idx * model.numberOfComponents;
+    if (idx > publicAPI.getNumberOfTuples()) {
+      // console.log(`${model.name}: ${model.values.length}`);
+      const newValues = new window[model.dataType](
+        offset + model.numberOfComponents - 1
+      );
+      newValues.set(model.values);
+      model.values = newValues;
+      // console.log(`${model.name}: ${model.values.length}`);
+    }
     for (let i = 0; i < model.numberOfComponents; i++) {
       model.values[offset + i] = tuple[i];
     }
+    // if (idx > publicAPI.getNumberOfTuples()) {
+    //   console.log(`${model.name}: ${model.values.length}`);
+    // }
+    dataChange();
   };
 
   publicAPI.getTuple = (idx, tupleToFill = TUPLE_HOLDER) => {
