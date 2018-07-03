@@ -53,11 +53,7 @@ function vtkOpenGLCamera(publicAPI, model) {
     ) {
       mat4.copy(model.keyMatrices.wcvc, model.renderable.getViewMatrix());
 
-      mat3.fromMat4(model.keyMatrices.normalMatrix, model.keyMatrices.wcvc);
-      mat3.invert(
-        model.keyMatrices.normalMatrix,
-        model.keyMatrices.normalMatrix
-      );
+      model.keyMatrices.normalMatrix = model.renderable.getNormalMatrix();
       mat4.transpose(model.keyMatrices.wcvc, model.keyMatrices.wcvc);
 
       const aspectRatio = model.openGLRenderer.getAspectRatio();

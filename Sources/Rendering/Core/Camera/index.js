@@ -1,4 +1,4 @@
-import { quat, vec3, vec4, mat4 } from 'gl-matrix';
+import { quat, vec3, vec4, mat3, mat4 } from 'gl-matrix';
 
 import macro from 'vtk.js/Sources/macro';
 import vtkMath from 'vtk.js/Sources/Common/Core/Math';
@@ -472,6 +472,19 @@ function vtkCamera(publicAPI, model) {
     return result;
   };
 
+  publicAPI.setNormalMatrix = (mat) => {
+    model.normalMatrix = mat;
+  };
+
+  publicAPI.getNormalMatrix = () => {
+    if (model.normalMatrix) {
+      return model.normalMatrix;
+    }
+    const result = mat3.create();
+    mat3.normalFromMat4(result, model.getViewMatrix());
+    return result;
+  };
+
   publicAPI.setProjectionMatrix = (mat) => {
     model.projectionMatrix = mat;
   };
@@ -738,6 +751,7 @@ export const DEFAULT_VALUES = {
   useScissor: false,
   projectionMatrix: null,
   viewMatrix: null,
+  normalMatrix: null,
 
   // used for world to physical transformations
   physicalTranslation: [0, 0, 0],
