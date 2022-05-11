@@ -107,13 +107,21 @@ renderer.addActor(actor);
 renderer.addActor2D(actor2D);
 renderer.resetCamera();
 renderWindow.render();
+const fullScreenRenderer1 = vtkFullScreenRenderWindow.newInstance({
+  background: [0, 0.1, 0.1],
+});
+const renderer1 = fullScreenRenderer1.getRenderer();
+const renderWindow1 = fullScreenRenderer1.getRenderWindow();
+renderer1.addActor(actor);
+renderer1.addActor(actor2D);
+renderWindow1.render();
 fpsMonitor.update();
 
 // -----------------------------------------------------------
 // UI control handling
 // -----------------------------------------------------------
 
-fullScreenRenderer.addController(controlPanel);
+fullScreenRenderer1.addController(controlPanel);
 const representationSelector = document.querySelector('.representations');
 const resolutionChange = document.querySelector('.resolution');
 
@@ -121,7 +129,7 @@ representationSelector.addEventListener('change', (e) => {
   const newRepValue = Number(e.target.value);
   actor2D.getProperty().setRepresentation(newRepValue);
   actor.getProperty().setRepresentation(newRepValue);
-  renderWindow.render();
+  renderWindow1.render();
   fpsMonitor.update();
 });
 

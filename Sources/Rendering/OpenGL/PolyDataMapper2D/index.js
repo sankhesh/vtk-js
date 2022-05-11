@@ -211,6 +211,9 @@ function vtkOpenGLPolyDataMapper2D(publicAPI, model) {
     const transformCoordinate = model.renderable.getTransformCoordinate();
 
     const view = ren.getRenderWindow().getViews()[0];
+    if (!view) {
+      return;
+    }
     const vsize = view.getViewportSize(ren);
     const toString =
       `${poly.getMTime()}A${representation}B${poly.getMTime()}` +
@@ -652,6 +655,9 @@ function vtkOpenGLPolyDataMapper2D(publicAPI, model) {
 
     // Get the position of the actor
     const view = ren.getRenderWindow().getViews()[0];
+    // if (!view) {
+    //   return;
+    // }
     const size = view.getViewportSize(ren);
     const vport = ren.getViewport();
     const actorPos = actor

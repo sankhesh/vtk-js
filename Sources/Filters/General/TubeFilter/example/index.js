@@ -41,6 +41,7 @@ function addRepresentation(name, filter, props = {}) {
   } else {
     mapper.setInputConnection(filter.getOutputPort());
   }
+  mapper.setScalarVisibility(false);
 
   const actor = vtkActor.newInstance();
   actor.setMapper(mapper);
@@ -52,7 +53,7 @@ function addRepresentation(name, filter, props = {}) {
 }
 
 vtkMath.randomSeed(15222);
-const numSegments = 3;
+const numSegments = 30;
 
 function initializePolyData(dType) {
   let pointType = VtkDataTypes.FLOAT;

@@ -13,6 +13,7 @@ import vtkRenderWindow from 'vtk.js/Sources/Rendering/Core/RenderWindow';
 import vtkRenderWindowInteractor from 'vtk.js/Sources/Rendering/Core/RenderWindowInteractor';
 import vtkRenderer from 'vtk.js/Sources/Rendering/Core/Renderer';
 import vtkInteractorStyleTrackballCamera from 'vtk.js/Sources/Interaction/Style/InteractorStyleTrackballCamera';
+import vtkCoordinate from 'vtk.js/Sources/Rendering/Core/Coordinate';
 
 import vtkOpenGLRenderWindow from 'vtk.js/Sources/Rendering/OpenGL/RenderWindow';
 
@@ -25,6 +26,9 @@ const meshes = [];
 function addMesh(name, source) {
   const mapper = vtkMapper.newInstance();
   mapper.setInputData(source.getOutputData());
+  const c = vtkCoordinate.newInstance();
+  c.setCoordinateSystemToWorld();
+  // mapper.setTransformCoordinate(c);
   meshes.push({ name, mapper });
 }
 
@@ -83,10 +87,11 @@ const colors = [
 // ----------------------------------------------------------------------------
 
 const RENDERERS = {};
+const RENDERWINDOWS = {};
 
-const renderWindow = vtkRenderWindow.newInstance();
-const openglRenderWindow = vtkOpenGLRenderWindow.newInstance();
-renderWindow.addView(openglRenderWindow);
+// const renderWindow = vtkRenderWindow.newInstance();
+// const openglRenderWindow = vtkOpenGLRenderWindow.newInstance();
+// renderWindow.addView(openglRenderWindow);
 
 const rootContainer = document.createElement('div');
 rootContainer.style.position = 'fixed';
@@ -96,24 +101,21 @@ rootContainer.style.top = 0;
 rootContainer.style.pointerEvents = 'none';
 document.body.appendChild(rootContainer);
 
-openglRenderWindow.setContainer(rootContainer);
+// openglRenderWindow.setContainer(rootContainer);
 
-const interactor = vtkRenderWindowInteractor.newInstance();
-interactor.setView(openglRenderWindow);
-interactor.initialize();
-interactor.bindEvents(document.body);
-interactor.setInteractorStyle(vtkInteractorStyleTrackballCamera.newInstance());
-
-function updateViewPort(element, renderer) {
-  const { innerHeight, innerWidth } = window;
-  const { x, y, width, height } = element.getBoundingClientRect();
-  const viewport = [
-    x / innerWidth,
-    1 - (y + height) / innerHeight,
-    (x + width) / innerWidth,
-    1 - y / innerHeight,
-  ];
-  renderer.setViewport(...viewport);
+function updateViewPort(element, renderWindow) {
+  // const { innerHeight, innerWidth } = window;
+  // const { x, y, width, height } = element.getBoundingClientRect();
+  // const rect = element.getBoundingClientRect();
+  // const viewport = [
+  //   x / innerWidth,
+  //   1 - (y + height) / innerHeight,
+  //   (x + width) / innerWidth,
+  //   1 - y / innerHeight,
+  // ];
+  // renderWindow.setPosition(x, y);
+  // renderWindow.setSize(rect.width, rect.height);
+  // renderer.setViewport(...viewport);
 }
 
 function recomputeViewports() {
@@ -121,17 +123,18 @@ function recomputeViewports() {
   for (let i = 0; i < rendererElems.length; i++) {
     const elem = rendererElems[i];
     const { id } = elem;
-    const renderer = RENDERERS[id];
-    updateViewPort(elem, renderer);
+    // const renderer = RENDERERS[id];
+    const renderWindow = RENDERWINDOWS[id];
+    updateViewPort(elem, renderWindow);
   }
-  renderWindow.render();
+  // renderWindow.render();
 }
 
 function resize() {
   rootContainer.style.width = `${window.innerWidth}px`;
-  openglRenderWindow.setSize(window.innerWidth, window.innerHeight);
+  // openglRenderWindow.setSize(window.innerWidth, window.innerHeight);
   recomputeViewports();
-  // Object.values(RENDERERS).forEach((r) => r.resetCamera());
+  Object.values(RENDERERS).forEach((r) => r.resetCamera());
 }
 
 window.addEventListener('resize', resize);
@@ -158,13 +161,13 @@ function applyStyle(element) {
   return element;
 }
 
-function enterCurrentRenderer(e) {
-  interactor.setCurrentRenderer(RENDERERS[e.target.id]);
-}
+// function enterCurrentRenderer(e) {
+//   interactor.setCurrentRenderer(RENDERERS[e.target.id]);
+// }
 
-function exitCurrentRenderer(e) {
-  interactor.setCurrentRenderer(null);
-}
+// function exitCurrentRenderer(e) {
+//   interactor.setCurrentRenderer(null);
+// }
 
 function addRenderer() {
   const mesh = meshes[meshIndex];
@@ -181,15 +184,29 @@ function addRenderer() {
   const actor = vtkActor.newInstance();
   actor.setMapper(mesh.mapper);
   actor.getProperty().set(prop.properties);
-  actor.getProperty().setDiffuse(0.9);
-  actor.getProperty().setSpecular(0.2);
-  actor.getProperty().setSpecularPower(30);
-  actor.getProperty().setSpecularColor(1.0, 1.0, 1.0);
+  actor.getProperty().setRepresentationToWireframe();
+  // actor.getProperty().setDiffuse(0.9);
+  // actor.getProperty().setSpecular(0.2);
+  // actor.getProperty().setSpecularPower(30);
+  // actor.getProperty().setSpecularColor(1.0, 1.0, 1.0);
+  actor.getProperty().setLineWidth(3);
   const renderer = vtkRenderer.newInstance({ background });
   container.innerHTML = `${mesh.name} ${prop.name}`;
 
-  container.addEventListener('mouseenter', enterCurrentRenderer);
-  container.addEventListener('mouseleave', exitCurrentRenderer);
+  // container.addEventListener('mouseenter', enterCurrentRenderer);
+  // container.addEventListener('mouseleave', exitCurrentRenderer);
+
+  const renderWindow = vtkRenderWindow.newInstance();
+  const openglRenderWindow = vtkOpenGLRenderWindow.newInstance();
+  renderWindow.addView(openglRenderWindow);
+  openglRenderWindow.setContainer(rootContainer);
+  const interactor = vtkRenderWindowInteractor.newInstance();
+  interactor.setView(openglRenderWindow);
+  interactor.initialize();
+  interactor.bindEvents(document.body);
+  interactor.setInteractorStyle(
+    vtkInteractorStyleTrackballCamera.newInstance()
+  );
 
   renderer.addActor(actor);
   renderWindow.addRenderer(renderer);
@@ -198,13 +215,14 @@ function addRenderer() {
 
   // Keep track of renderer
   RENDERERS[container.id] = renderer;
+  RENDERWINDOWS[container.id] = renderWindow;
 }
 
 // ----------------------------------------------------------------------------
 // Fill up page
 // ----------------------------------------------------------------------------
 
-for (let i = 0; i < 64; i++) {
+for (let i = 0; i < 20; i++) {
   addRenderer();
 }
 resize();
@@ -215,9 +233,14 @@ function updateCamera(renderer) {
   renderer.resetCameraClippingRange();
 }
 
+function render(renderWindow) {
+  renderWindow.render();
+}
+
 function animate() {
   Object.values(RENDERERS).forEach(updateCamera);
-  renderWindow.render();
+  Object.values(RENDERWINDOWS).forEach(render);
+  // renderWindow.render();
   window.requestAnimationFrame(animate);
 }
 
@@ -227,6 +250,6 @@ window.requestAnimationFrame(animate);
 // Globals
 // ----------------------------------------------------------------------------
 
-global.rw = renderWindow;
-global.glrw = openglRenderWindow;
+// global.rw = renderWindow;
+// global.glrw = openglRenderWindow;
 global.renderers = RENDERERS;

@@ -88,6 +88,10 @@ function vtkOpenGLHelper(publicAPI, model) {
       // we have wide lines, but the OpenGL implementation may
       // actually support them, check the range to see if we
       // really need have to implement our own wide lines
+      if (!model.CABO.getOpenGLRenderWindow())
+      {
+        return false;
+      }
       if (model.CABO.getOpenGLRenderWindow()) {
         if (
           model.CABO.getOpenGLRenderWindow().getHardwareMaximumLineWidth() >=

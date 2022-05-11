@@ -242,6 +242,11 @@ function vtkOpenGLRenderWindow(publicAPI, model) {
     }
   ) => {
     let result = null;
+    
+    if (model.contextLimitReached) {
+      console.error("Limit reached");
+      return result;
+    }
 
     // Do we have webxr support
     if (
@@ -271,7 +276,8 @@ function vtkOpenGLRenderWindow(publicAPI, model) {
     model.canvas.addEventListener(
       'webglcontextlost',
       (event) => {
-        event.preventDefault();
+        publicAPI.restoreContext();
+        // event.preventDefault();
       },
       false
     );
@@ -476,9 +482,11 @@ function vtkOpenGLRenderWindow(publicAPI, model) {
   };
 
   publicAPI.restoreContext = () => {
-    const rp = vtkRenderPass.newInstance();
-    rp.setCurrentOperation('Release');
-    rp.traverse(publicAPI, null);
+    console.error('AHHHAJKHSKJKFHKASJDF');
+    model.contextLimitReached = true;
+    // const rp = vtkRenderPass.newInstance();
+    // rp.setCurrentOperation('Release');
+    // rp.traverse(publicAPI, null);
   };
 
   publicAPI.activateTexture = (texture) => {
@@ -731,7 +739,7 @@ function vtkOpenGLRenderWindow(publicAPI, model) {
   publicAPI.getHardwareMaximumLineWidth = () => {
     const gl = publicAPI.get3DContext();
     const lineWidthRange = gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE);
-    return lineWidthRange[1];
+    return lineWidthRange ? lineWidthRange[1] : 1;
   };
 
   publicAPI.getGLInformations = () => {
