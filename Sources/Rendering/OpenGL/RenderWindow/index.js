@@ -108,8 +108,13 @@ function vtkOpenGLRenderWindow(publicAPI, model) {
       ) {
         previousSize[0] = model.size[0];
         previousSize[1] = model.size[1];
-        model.canvas.setAttribute('width', model.size[0]);
-        model.canvas.setAttribute('height', model.size[1]);
+        if (!model.useOffScreenCanvas) {
+          model.canvas.setAttribute('width', model.size[0]);
+          model.canvas.setAttribute('height', model.size[1]);
+        } else {
+          model.canvas.width = model.size[0];
+          model.canvas.height = model.size[1];
+        }
       }
     }
 
@@ -120,7 +125,9 @@ function vtkOpenGLRenderWindow(publicAPI, model) {
     }
 
     // Offscreen ?
-    model.canvas.style.display = model.useOffScreen ? 'none' : 'block';
+    if (!model.useOffScreenCanvas) {
+      model.canvas.style.display = model.useOffScreen ? 'none' : 'block';
+    }
 
     // Cursor type
     if (model.el) {
@@ -193,7 +200,7 @@ function vtkOpenGLRenderWindow(publicAPI, model) {
     if (model.el !== el) {
       model.el = el;
       if (model.el) {
-        model.el.appendChild(model.canvas);
+        model.el.appendChild(model.htmlCanvas);
 
         // If the renderer is set to use a background
         // image, attach it to the DOM.
@@ -1154,6 +1161,7 @@ const DEFAULT_VALUES = {
   initialized: false,
   context: null,
   canvas: null,
+  htmlCanvas: null,
   cursorVisibility: true,
   cursor: 'pointer',
   textureUnitManager: null,
@@ -1167,6 +1175,7 @@ const DEFAULT_VALUES = {
   imageFormat: 'image/png',
   useOffScreen: false,
   useBackgroundImage: false,
+  useOffScreenCanvas: true,
 };
 
 // ----------------------------------------------------------------------------
@@ -1178,8 +1187,18 @@ export function extend(publicAPI, model, initialValues = {}) {
   vtkRenderWindowViewNode.extend(publicAPI, model, initialValues);
 
   // Create internal instances
-  model.canvas = document.createElement('canvas');
+  model.htmlCanvas = document.createElement('canvas');
+  model.canvas =
+    'OffscreenCanvas' in window
+      ? model.htmlCanvas.transferControlToOffscreen()
+      : model.htmlCanvas;
+  model.canvas.style = { width: 100, height: 100 };
+  // model.canvas = model.useOffScreenCanvas
+  //   ? new OffscreenCanvas(100, 100)
+  //   : document.createElement('canvas');
+  // if (!model.useOffScreenCanvas) {
   model.canvas.style.width = '100%';
+  // }
   createGLContext();
 
   if (!model.selector) {
@@ -1227,11 +1246,13 @@ export function extend(publicAPI, model, initialValues = {}) {
     'initialized',
     'context',
     'canvas',
+    'htmlCanvas',
     'renderPasses',
     'notifyStartCaptureImage',
     'defaultToWebgl2',
     'cursor',
     'useOffScreen',
+    'useOffScreenCanvas',
   ]);
 
   macro.setGetArray(publicAPI, model, ['size'], 2);

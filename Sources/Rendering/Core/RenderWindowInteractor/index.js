@@ -173,7 +173,7 @@ function vtkRenderWindowInteractor(publicAPI, model) {
   };
 
   function _getScreenEventPositionFor(source) {
-    const canvas = model._view.getCanvas();
+    const canvas = model._view.getHtmlCanvas();
     const bounds = canvas.getBoundingClientRect();
     const scaleX = canvas.width / bounds.width;
     const scaleY = canvas.height / bounds.height;
@@ -456,7 +456,8 @@ function vtkRenderWindowInteractor(publicAPI, model) {
   function forceRender() {
     if (model._view && model.enabled && model.enableRender) {
       model.inRender = true;
-      model._view.traverseAllPasses();
+      model.worker.postMessage({ view: model._view });
+      // model._view.traverseAllPasses();
       model.inRender = false;
     }
     // outside the above test so that third-party code can redirect
@@ -1228,6 +1229,7 @@ export function extend(publicAPI, model, initialValues = {}) {
   ]);
   macro.moveToProtected(publicAPI, model, ['view']);
 
+  model.worker = new Worker('worker.js');
   // For more macro methods, see "Sources/macros.js"
 
   // Object specific methods
